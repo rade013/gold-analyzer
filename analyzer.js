@@ -16,25 +16,33 @@ async function getGoldData() {
 
         // LIVE CENA
         const liveResponse = await fetch(
-            "https://biquote.io/api/XAUUSD?allowStale=false"
+            "https://biquote.io/api/XAUUSD?fresh=" + Date.now()
         );
 
         if (!liveResponse.ok) {
-            throw new Error("Live cena HTTP " + liveResponse.status);
+            throw new Error(
+                "Live cena HTTP " +
+                liveResponse.status
+            );
         }
 
-        const liveData = await liveResponse.json();
+        const liveData =
+            await liveResponse.json();
 
-        const currentPrice = Number(liveData.mid);
+        const currentPrice =
+            Number(liveData.mid);
 
         if (!currentPrice) {
-            throw new Error("Live cena nije dostupna.");
+            throw new Error(
+                "Live cena nije dostupna."
+            );
         }
 
 
-        // ISTORIJSKI PODACI ZA ANALIZU
+        // ISTORIJSKI PODACI
         const historyResponse = await fetch(
-            "https://biquote.io/api/XAUUSD/ohlc?interval=1h&limit=200"
+            "https://biquote.io/api/XAUUSD/ohlc?interval=1h&limit=200&fresh=" +
+            Date.now()
         );
 
         if (!historyResponse.ok) {
@@ -48,13 +56,16 @@ async function getGoldData() {
             await historyResponse.json();
 
 
-        const bars = historyData.bars
-            .filter(bar => !bar.isOpen)
-            .reverse();
+        const bars =
+            historyData.bars
+                .filter(bar => !bar.isOpen)
+                .reverse();
 
 
         const prices =
-            bars.map(bar => Number(bar.close));
+            bars.map(
+                bar => Number(bar.close)
+            );
 
 
         if (prices.length < 50) {
@@ -66,17 +77,22 @@ async function getGoldData() {
 
         // PRIKAZ LIVE CENE
         priceElement.textContent =
-            "$" + currentPrice.toFixed(2);
+            "$" +
+            currentPrice.toFixed(2);
 
 
         // ANALIZA
-        analyze(prices, currentPrice);
+        analyze(
+            prices,
+            currentPrice
+        );
 
 
         updatedElement.textContent =
             new Date().toLocaleTimeString(
                 "sr-Latn-RS"
             );
+
 
     } catch (error) {
 
@@ -86,18 +102,23 @@ async function getGoldData() {
         );
 
         messageElement.textContent =
-            "Greška: " + error.message;
+            "Greška: " +
+            error.message;
     }
 }
 
 
 
-function calculateEMA(prices, period) {
+function calculateEMA(
+    prices,
+    period
+) {
 
     const multiplier =
         2 / (period + 1);
 
-    let ema = prices[0];
+    let ema =
+        prices[0];
 
 
     for (
@@ -193,7 +214,9 @@ function analyze(
 
 
     const rsi =
-        calculateRSI(prices);
+        calculateRSI(
+            prices
+        );
 
 
     const oldPrice =
@@ -212,7 +235,6 @@ function analyze(
     let score = 50;
 
 
-
     // EMA TREND
     if (ema20 > ema50) {
 
@@ -224,7 +246,6 @@ function analyze(
     }
 
 
-
     // CENA VS EMA20
     if (currentPrice > ema20) {
 
@@ -234,7 +255,6 @@ function analyze(
 
         score -= 10;
     }
-
 
 
     // RSI
@@ -256,7 +276,6 @@ function analyze(
     }
 
 
-
     // MOMENTUM
     if (momentum > 0) {
 
@@ -268,8 +287,6 @@ function analyze(
     }
 
 
-
-    // OGRANIČENJE 0-100
     score =
         Math.max(
             0,
@@ -280,10 +297,8 @@ function analyze(
         );
 
 
-
     let trend;
     let signal;
-
 
 
     if (score >= 70) {
@@ -303,33 +318,26 @@ function analyze(
     }
 
 
-
-    // PRIKAZ
     trendElement.textContent =
         trend;
-
 
     signalElement.textContent =
         signal;
 
-
     scoreElement.textContent =
-        score + " / 100";
-
+        score +
+        " / 100";
 
     rsiElement.textContent =
         rsi.toFixed(1);
-
 
     ema20Element.textContent =
         "$" +
         ema20.toFixed(2);
 
-
     ema50Element.textContent =
         "$" +
         ema50.toFixed(2);
-
 
     momentumElement.textContent =
         (
@@ -339,7 +347,6 @@ function analyze(
         ) +
         momentum.toFixed(3) +
         "%";
-
 
 
     if (signal === "🟢 BUY") {
@@ -364,7 +371,6 @@ function analyze(
 
 
 getGoldData();
-
 
 
 setInterval(
