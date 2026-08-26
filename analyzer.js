@@ -169,11 +169,16 @@ async function getGoldData() {
                 age < 60
             ) {
 
-                updatedElement.textContent =
-                    quoteTime +
-                    " • podatak pre " +
-                    age +
-                    "s";
+                const checkTime =
+    new Date().toLocaleTimeString(
+        "sr-Latn-RS"
+    );
+
+updatedElement.textContent =
+    "Provera: " +
+    checkTime +
+    " • Poslednji tick: " +
+    quoteTime;
 
             } else if (
                 age < 3600
