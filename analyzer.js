@@ -5,55 +5,33 @@ const scoreElement = document.getElementById("score");
 const messageElement = document.getElementById("message");
 
 async function getGoldPrice() {
-
     try {
-
-        const response = await fetch(
-            "https://api.xaus.com/v1/spot"
-        );
-
+        const response = await fetch("https://xaus.com/api/v1/spot?compact=1");
         const data = await response.json();
 
-        const price = data.price;
+        const price = data.spot_usd_oz;
 
-        priceElement.textContent =
-            "$" + Number(price).toFixed(2);
+        priceElement.textContent = "$" + Number(price).toFixed(2);
 
         analyzeGold(price);
 
     } catch (error) {
-
-        priceElement.textContent =
-            "Greška";
-
-        messageElement.textContent =
-            "Ne mogu da preuzmem cenu zlata.";
-
+        priceElement.textContent = "Greška";
+        messageElement.textContent = "Ne mogu da preuzmem cenu zlata.";
         console.error(error);
     }
 }
 
-
 function analyzeGold(price) {
 
-    /*
-       ZA SADA SAMO TESTIRAMO
-       DA LI DOBIJAMO CENU.
-    */
-
     let score = 50;
-
     let trend = "NEUTRAL";
-
     let signal = "NO TRADE";
 
     if (score >= 70) {
-
         trend = "BULLISH";
         signal = "BUY";
-
     } else if (score <= 30) {
-
         trend = "BEARISH";
         signal = "SELL";
     }
@@ -61,16 +39,9 @@ function analyzeGold(price) {
     trendElement.textContent = trend;
     signalElement.textContent = signal;
     scoreElement.textContent = score + " / 100";
-
-    messageElement.textContent =
-        "Gold Analyzer radi...";
+    messageElement.textContent = "Gold Analyzer radi...";
 }
-
 
 getGoldPrice();
 
-
-setInterval(
-    getGoldPrice,
-    60000
-);
+setInterval(getGoldPrice, 60000);
