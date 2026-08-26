@@ -1,85 +1,192 @@
 body {
+
     margin: 0;
+
     min-height: 100vh;
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
     font-family: Arial, sans-serif;
+
     background: #111827;
+
     color: white;
+
 }
+
 
 .container {
-    width: 900px;
-    max-width: 90%;
+
+    width: 1000px;
+
+    max-width: 92%;
+
+    margin: 30px auto;
+
     padding: 30px;
+
     background: #1f2937;
+
     border-radius: 20px;
+
     text-align: center;
+
     box-shadow: 0 10px 40px #0008;
+
 }
+
 
 h1 {
+
     color: #fbbf24;
+
+    margin-top: 0;
+
 }
+
 
 h2 {
+
     color: #fbbf24;
+
+    margin-bottom: 20px;
+
 }
+
 
 .price {
-    font-size: 48px;
+
+    font-size: 52px;
+
     font-weight: bold;
+
     margin: 25px 0 5px;
+
 }
+
 
 .live {
+
     color: #22c55e;
+
     font-weight: bold;
+
+    margin-bottom: 25px;
+
 }
 
-.cards {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
 
-.card {
-    width: 170px;
-    margin: 10px;
-    padding: 20px;
-    background: #374151;
-    border-radius: 15px;
-}
+.main-signal {
 
-.label {
-    color: #9ca3af;
-    font-size: 14px;
-}
+    padding: 25px;
 
-.value {
-    font-size: 24px;
-    margin-top: 8px;
-}
+    margin-bottom: 25px;
 
-.analysis {
-    margin-top: 25px;
-    padding: 20px;
     background: #111827;
-    border-radius: 15px;
+
+    border-radius: 18px;
+
 }
 
-.analysis p {
-    font-size: 18px;
-}
 
 .signal {
-    font-size: 32px;
+
+    font-size: 36px;
+
     font-weight: bold;
-    margin: 25px;
+
+    margin: 10px;
+
 }
 
-.update {
+
+.confidence {
+
+    font-size: 24px;
+
+    color: #fbbf24;
+
+}
+
+
+.section {
+
+    margin-top: 25px;
+
+    padding: 20px;
+
+    background: #111827;
+
+    border-radius: 18px;
+
+}
+
+
+.cards {
+
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+}
+
+
+.card {
+
+    width: 170px;
+
+    margin: 8px;
+
+    padding: 18px;
+
+    background: #374151;
+
+    border-radius: 14px;
+
+}
+
+
+.label {
+
     color: #9ca3af;
+
     font-size: 13px;
+
+}
+
+
+.value {
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    margin-top: 8px;
+
+}
+
+
+.message {
+
+    font-size: 21px;
+
+    font-weight: bold;
+
+    margin: 30px 10px;
+
+}
+
+
+.update {
+
+    color: #9ca3af;
+
+    font-size: 13px;
+
 }
