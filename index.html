@@ -9,44 +9,58 @@
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>🥇 XAU/USD GOLD ANALYZER</h1>
+    <h1>🥇 XAU/USD GOLD ANALYZER</h1>
 
-        <div class="price" id="price">
-            Loading...
-        </div>
+    <div class="price" id="price">Loading...</div>
+    <div class="live">● LIVE</div>
 
-        <div class="live">
-            ● LIVE
-        </div>
+    <div class="cards">
 
         <div class="card">
             <div class="label">TREND</div>
-            <div class="value" id="trend">
-                —
-            </div>
+            <div class="value" id="trend">—</div>
         </div>
 
         <div class="card">
             <div class="label">SIGNAL</div>
-            <div class="value" id="signal">
-                —
-            </div>
+            <div class="value" id="signal">—</div>
         </div>
 
         <div class="card">
             <div class="label">SCORE</div>
-            <div class="value" id="score">
-                —
-            </div>
+            <div class="value" id="score">—</div>
         </div>
 
-        <div class="signal" id="message">
-            Analiziram tržište...
+        <div class="card">
+            <div class="label">RSI</div>
+            <div class="value" id="rsi">—</div>
         </div>
 
     </div>
-<script src="analyzer.js?v=2"></script>
+
+    <div class="analysis">
+
+        <h2>📊 ANALIZA</h2>
+
+        <p>EMA 20: <b id="ema20">—</b></p>
+        <p>EMA 50: <b id="ema50">—</b></p>
+        <p>Momentum: <b id="momentum">—</b></p>
+
+    </div>
+
+    <div class="signal" id="message">
+        Analiziram tržište...
+    </div>
+
+    <div class="update">
+        Poslednje ažuriranje: <span id="updated">—</span>
+    </div>
+
+</div>
+
+<script src="analyzer.js?v=3"></script>
+
 </body>
 </html>
