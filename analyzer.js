@@ -14,74 +14,90 @@ async function getGoldData() {
 
     try {
 
-        // LIVE CENA
-        const liveResponse = await fetch(
-            "https://biquote.io/api/XAUUSD?fresh=" + Date.now()
-        );
-
-        if (!liveResponse.ok) {
-            throw new Error(
-                "Live cena HTTP " +
-                liveResponse.status
-            );
-        }
-
-        const liveData =
-            await liveResponse.json();
-
-        const currentPrice =
-            Number(liveData.mid);
-
-        if (!currentPrice) {
-            throw new Error(
-                "Live cena nije dostupna."
-            );
-        }
-
-
-        // ISTORIJSKI PODACI
-        const historyResponse = await fetch(
+        const response = await fetch(
             "https://biquote.io/api/XAUUSD/ohlc?interval=1h&limit=200&fresh=" +
             Date.now()
         );
 
-        if (!historyResponse.ok) {
+        if (!response.ok) {
+
             throw new Error(
-                "Istorijski podaci HTTP " +
-                historyResponse.status
+                "API HTTP " +
+                response.status
             );
         }
 
-        const historyData =
-            await historyResponse.json();
+
+        const data =
+            await response.json();
 
 
         const bars =
-            historyData.bars
-                .filter(bar => !bar.isOpen)
+            data.bars;
+
+
+        if (!bars || bars.length < 50) {
+
+            throw new Error(
+                "Nema dovoljno podataka."
+            );
+        }
+
+
+        // TRENUTNA CENA
+        // Prva sveća je najnovija.
+        // Ako je otvorena, njen close
+        // predstavlja trenutnu cenu.
+
+        const currentBar =
+            bars[0];
+
+
+        const currentPrice =
+            Number(currentBar.close);
+
+
+        if (!currentPrice) {
+
+            throw new Error(
+                "Trenutna cena nije dostupna."
+            );
+        }
+
+
+        // ZATVORENE SVEĆE ZA ANALIZU
+
+        const closedBars =
+            bars
+                .filter(
+                    bar => !bar.isOpen
+                )
                 .reverse();
 
 
         const prices =
-            bars.map(
+            closedBars.map(
                 bar => Number(bar.close)
             );
 
 
         if (prices.length < 50) {
+
             throw new Error(
-                "Nema dovoljno podataka za analizu."
+                "Nema dovoljno zatvorenih sveća."
             );
         }
 
 
-        // PRIKAZ LIVE CENE
+        // PRIKAZ CENE
+
         priceElement.textContent =
             "$" +
             currentPrice.toFixed(2);
 
 
         // ANALIZA
+
         analyze(
             prices,
             currentPrice
@@ -101,6 +117,7 @@ async function getGoldData() {
             error
         );
 
+
         messageElement.textContent =
             "Greška: " +
             error.message;
@@ -116,6 +133,7 @@ function calculateEMA(
 
     const multiplier =
         2 / (period + 1);
+
 
     let ema =
         prices[0];
@@ -172,6 +190,7 @@ function calculateRSI(
 
     const averageGain =
         gains / period;
+
 
     const averageLoss =
         losses / period;
@@ -236,7 +255,10 @@ function analyze(
 
 
     // EMA TREND
-    if (ema20 > ema50) {
+
+    if (
+        ema20 > ema50
+    ) {
 
         score += 20;
 
@@ -247,7 +269,10 @@ function analyze(
 
 
     // CENA VS EMA20
-    if (currentPrice > ema20) {
+
+    if (
+        currentPrice > ema20
+    ) {
 
         score += 10;
 
@@ -258,6 +283,7 @@ function analyze(
 
 
     // RSI
+
     if (
         rsi > 55 &&
         rsi < 70
@@ -277,7 +303,10 @@ function analyze(
 
 
     // MOMENTUM
-    if (momentum > 0) {
+
+    if (
+        momentum > 0
+    ) {
 
         score += 10;
 
@@ -286,6 +315,8 @@ function analyze(
         score -= 10;
     }
 
+
+    // OGRANIČENJE
 
     score =
         Math.max(
@@ -301,43 +332,62 @@ function analyze(
     let signal;
 
 
-    if (score >= 70) {
+    if (
+        score >= 70
+    ) {
 
-        trend = "🟢 BULLISH";
-        signal = "🟢 BUY";
+        trend =
+            "🟢 BULLISH";
 
-    } else if (score <= 30) {
+        signal =
+            "🟢 BUY";
 
-        trend = "🔴 BEARISH";
-        signal = "🔴 SELL";
+    } else if (
+        score <= 30
+    ) {
+
+        trend =
+            "🔴 BEARISH";
+
+        signal =
+            "🔴 SELL";
 
     } else {
 
-        trend = "🟡 NEUTRAL";
-        signal = "⚪ NO TRADE";
+        trend =
+            "🟡 NEUTRAL";
+
+        signal =
+            "⚪ NO TRADE";
     }
 
 
     trendElement.textContent =
         trend;
 
+
     signalElement.textContent =
         signal;
+
 
     scoreElement.textContent =
         score +
         " / 100";
 
+
     rsiElement.textContent =
         rsi.toFixed(1);
+
 
     ema20Element.textContent =
         "$" +
         ema20.toFixed(2);
 
+
     ema50Element.textContent =
         "$" +
         ema50.toFixed(2);
+
 
     momentumElement.textContent =
         (
@@ -349,7 +399,9 @@ function analyze(
         "%";
 
 
-    if (signal === "🟢 BUY") {
+    if (
+        signal === "🟢 BUY"
+    ) {
 
         messageElement.textContent =
             "Tržište pokazuje bullish uslove.";
