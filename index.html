@@ -1,66 +1,276 @@
 <!DOCTYPE html>
 <html lang="sr">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🥇 Gold Analyzer</title>
-    <link rel="stylesheet" href="style.css">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>🥇 Gold Analyzer V2</title>
+
+    <link rel="stylesheet"
+          href="style.css">
+
 </head>
+
 
 <body>
 
+
 <div class="container">
+
 
     <h1>🥇 XAU/USD GOLD ANALYZER</h1>
 
-    <div class="price" id="price">Loading...</div>
-    <div class="live">● LIVE</div>
 
-    <div class="cards">
+    <div class="price"
+         id="price">
+        Loading...
+    </div>
 
-        <div class="card">
-            <div class="label">TREND</div>
-            <div class="value" id="trend">—</div>
+
+    <div class="live">
+        ● LIVE
+    </div>
+
+
+
+    <!-- GLAVNI SIGNAL -->
+
+    <div class="main-signal">
+
+        <div class="label">
+            FINAL SIGNAL
         </div>
 
-        <div class="card">
-            <div class="label">SIGNAL</div>
-            <div class="value" id="signal">—</div>
+        <div class="signal"
+             id="signal">
+            —
         </div>
 
-        <div class="card">
-            <div class="label">SCORE</div>
-            <div class="value" id="score">—</div>
-        </div>
-
-        <div class="card">
-            <div class="label">RSI</div>
-            <div class="value" id="rsi">—</div>
+        <div class="confidence"
+             id="score">
+            —
         </div>
 
     </div>
 
-    <div class="analysis">
 
-        <h2>📊 ANALIZA</h2>
 
-        <p>EMA 20: <b id="ema20">—</b></p>
-        <p>EMA 50: <b id="ema50">—</b></p>
-        <p>Momentum: <b id="momentum">—</b></p>
+    <!-- M15 -->
+
+    <div class="section">
+
+        <h2>📊 M15 ANALIZA</h2>
+
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <div class="label">
+                    TREND
+                </div>
+
+                <div class="value"
+                     id="trend">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    RSI
+                </div>
+
+                <div class="value"
+                     id="rsi">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    EMA 20
+                </div>
+
+                <div class="value"
+                     id="ema20">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    EMA 50
+                </div>
+
+                <div class="value"
+                     id="ema50">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    EMA 200
+                </div>
+
+                <div class="value"
+                     id="ema200">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    MACD
+                </div>
+
+                <div class="value"
+                     id="macd">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    MOMENTUM
+                </div>
+
+                <div class="value"
+                     id="momentum">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    MARKET STRUCTURE
+                </div>
+
+                <div class="value"
+                     id="structure">
+                    —
+                </div>
+
+            </div>
+
+
+        </div>
 
     </div>
 
-    <div class="signal" id="message">
+
+
+    <!-- H1 -->
+
+    <div class="section">
+
+        <h2>⏱️ H1 FILTER</h2>
+
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <div class="label">
+                    H1 TREND
+                </div>
+
+                <div class="value"
+                     id="h1Trend">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    H1 RSI
+                </div>
+
+                <div class="value"
+                     id="h1Rsi">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    H1 MACD
+                </div>
+
+                <div class="value"
+                     id="h1Macd">
+                    —
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- PORUKA -->
+
+    <div class="message"
+         id="message">
+
         Analiziram tržište...
+
     </div>
+
+
 
     <div class="update">
-        Poslednje ažuriranje: <span id="updated">—</span>
+
+        Poslednje ažuriranje:
+        <span id="updated">—</span>
+
     </div>
+
 
 </div>
 
+
+
 <script src="analyzer.js?v=4"></script>
 
+
 </body>
+
 </html>
