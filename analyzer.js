@@ -50,6 +50,13 @@ async function getGoldData() {
         messageElement.textContent =
             "Greška: " + error.message;
     }
+    const liveResponse = await fetch(
+    "https://biquote.io/api/XAUUSD?allowStale=false"
+);
+
+const liveData = await liveResponse.json();
+
+const currentPrice = Number(liveData.mid);
 }
 
 
