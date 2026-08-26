@@ -14,7 +14,7 @@ async function getGoldData() {
     try {
 
         const response = await fetch(
-            "https://xaus.com/api/v1/intraday?symbol=xau&hours=24&fresh=" + Date.now()
+            "https://biquote.io/api/XAUUSD/ohlc?interval=1h&limit=200"
         );
 
         if (!response.ok) {
@@ -23,20 +23,14 @@ async function getGoldData() {
 
         const data = await response.json();
 
-        console.log("XAUS DATA:", data);
+        const bars = data.bars
+            .filter(bar => !bar.isOpen)
+            .reverse();
 
-        if (!data.points || data.points.length < 50) {
-            throw new Error(
-                "API je vratio samo " +
-                (data.points ? data.points.length : 0) +
-                " podataka."
-            );
-        }
+        const prices = bars.map(bar => Number(bar.close));
 
-        const prices = data.points.map(point => Number(point.p));
-
-        if (prices.some(isNaN)) {
-            throw new Error("API je vratio neispravne cene.");
+        if (prices.length < 50) {
+            throw new Error("Nema dovoljno candle-a.");
         }
 
         const currentPrice = prices[prices.length - 1];
@@ -51,7 +45,7 @@ async function getGoldData() {
 
     } catch (error) {
 
-        console.error("GOLD API ERROR:", error);
+        console.error(error);
 
         messageElement.textContent =
             "Greška: " + error.message;
@@ -80,9 +74,14 @@ function calculateRSI(prices, period = 14) {
     let gains = 0;
     let losses = 0;
 
-    for (let i = prices.length - period; i < prices.length; i++) {
+    for (
+        let i = prices.length - period;
+        i < prices.length;
+        i++
+    ) {
 
-        const change = prices[i] - prices[i - 1];
+        const change =
+            prices[i] - prices[i - 1];
 
         if (change > 0) {
             gains += change;
@@ -91,14 +90,18 @@ function calculateRSI(prices, period = 14) {
         }
     }
 
-    const averageGain = gains / period;
-    const averageLoss = losses / period;
+    const averageGain =
+        gains / period;
+
+    const averageLoss =
+        losses / period;
 
     if (averageLoss === 0) {
         return 100;
     }
 
-    const rs = averageGain / averageLoss;
+    const rs =
+        averageGain / averageLoss;
 
     return 100 - (100 / (1 + rs));
 }
@@ -106,14 +109,20 @@ function calculateRSI(prices, period = 14) {
 
 function analyze(prices) {
 
-    const current = prices[prices.length - 1];
+    const current =
+        prices[prices.length - 1];
 
-    const ema20 = calculateEMA(prices, 20);
-    const ema50 = calculateEMA(prices, 50);
-    const rsi = calculateRSI(prices);
+    const ema20 =
+        calculateEMA(prices, 20);
+
+    const ema50 =
+        calculateEMA(prices, 50);
+
+    const rsi =
+        calculateRSI(prices);
 
     const oldPrice =
-        prices[Math.max(0, prices.length - 10)];
+        prices[prices.length - 10];
 
     const momentum =
         ((current - oldPrice) / oldPrice) * 100;
@@ -138,6 +147,7 @@ function analyze(prices) {
     if (rsi > 55 && rsi < 70) {
         score += 15;
     }
+
 
     if (rsi < 45 && rsi > 30) {
         score -= 15;
@@ -176,8 +186,12 @@ function analyze(prices) {
     }
 
 
-    trendElement.textContent = trend;
-    signalElement.textContent = signal;
+    trendElement.textContent =
+        trend;
+
+    signalElement.textContent =
+        signal;
+
     scoreElement.textContent =
         score + " / 100";
 
@@ -205,7 +219,6 @@ function analyze(prices) {
 
 
 getGoldData();
-
 
 setInterval(
     getGoldData,
