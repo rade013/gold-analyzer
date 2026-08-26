@@ -23,10 +23,20 @@ async function getGoldData() {
 
         const data = await response.json();
 
-        const prices = data.points.map(point => point.p);
+        console.log("XAUS DATA:", data);
 
-        if (prices.length < 50) {
-            throw new Error("Nema dovoljno podataka za analizu.");
+        if (!data.points || data.points.length < 50) {
+            throw new Error(
+                "API je vratio samo " +
+                (data.points ? data.points.length : 0) +
+                " podataka."
+            );
+        }
+
+        const prices = data.points.map(point => Number(point.p));
+
+        if (prices.some(isNaN)) {
+            throw new Error("API je vratio neispravne cene.");
         }
 
         const currentPrice = prices[prices.length - 1];
@@ -41,7 +51,7 @@ async function getGoldData() {
 
     } catch (error) {
 
-        console.error(error);
+        console.error("GOLD API ERROR:", error);
 
         messageElement.textContent =
             "Greška: " + error.message;
