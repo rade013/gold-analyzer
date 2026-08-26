@@ -21,13 +21,16 @@ body {
 
 h1 {
     color: #fbbf24;
-    margin-top: 0;
+}
+
+h2 {
+    color: #fbbf24;
 }
 
 .price {
     font-size: 48px;
     font-weight: bold;
-    margin: 25px 0 10px;
+    margin: 25px 0 5px;
 }
 
 .live {
@@ -35,9 +38,14 @@ h1 {
     font-weight: bold;
 }
 
+.cards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
 .card {
-    display: inline-block;
-    width: 180px;
+    width: 170px;
     margin: 10px;
     padding: 20px;
     background: #374151;
@@ -54,8 +62,24 @@ h1 {
     margin-top: 8px;
 }
 
+.analysis {
+    margin-top: 25px;
+    padding: 20px;
+    background: #111827;
+    border-radius: 15px;
+}
+
+.analysis p {
+    font-size: 18px;
+}
+
 .signal {
     font-size: 32px;
     font-weight: bold;
-    margin: 20px;
+    margin: 25px;
+}
+
+.update {
+    color: #9ca3af;
+    font-size: 13px;
 }
