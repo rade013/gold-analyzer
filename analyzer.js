@@ -50,87 +50,131 @@ const liveElement =
     document.querySelector(".live");
 
 
+let currentPrice = null;
+
+
+
+// ==========================================
+// LIVE WEBSOCKET
+// ==========================================
+
+const connection =
+    new signalR.HubConnectionBuilder()
+        .withUrl(
+            "https://biquote.io/hubs/tick"
+        )
+        .withAutomaticReconnect()
+        .build();
+
+
+
+connection.on(
+    "ReceiveTick",
+    function(tick) {
+
+        if (
+            !tick ||
+            tick.symbol !== "XAUUSD"
+        ) {
+            return;
+        }
+
+
+        const price =
+            Number(tick.mid);
+
+
+        if (!price) {
+            return;
+        }
+
+
+        currentPrice =
+            price;
+
+
+        priceElement.textContent =
+            "$" +
+            price.toFixed(2);
+
+
+        liveElement.textContent =
+            "● LIVE";
+
+
+        updatedElement.textContent =
+            new Date().toLocaleTimeString(
+                "sr-Latn-RS"
+            );
+    }
+);
+
+
+
+async function startLiveConnection() {
+
+    try {
+
+        await connection.start();
+
+
+        console.log(
+            "XAUUSD WebSocket connected."
+        );
+
+
+        await connection.invoke(
+            "Subscribe",
+            ["XAUUSD"]
+        );
+
+
+        liveElement.textContent =
+            "● LIVE";
+
+
+    } catch (error) {
+
+        console.error(
+            "WebSocket error:",
+            error
+        );
+
+
+        liveElement.textContent =
+            "● RECONNECTING";
+
+
+        setTimeout(
+            startLiveConnection,
+            5000
+        );
+    }
+}
+
+
+
+connection.onclose(
+    function() {
+
+        liveElement.textContent =
+            "● RECONNECTING";
+    }
+);
+
+
+
+// ==========================================
+// M15 + H1 ANALIZA
+// ==========================================
 
 async function getGoldData() {
 
     try {
 
-        // ==========================================
-        // 1. PRAVA LIVE CENA
-        // ==========================================
-
-        const liveResponse =
-            await fetch(
-                "https://biquote.io/api/XAUUSD",
-                {
-                    cache: "no-store"
-                }
-            );
-
-
-        if (!liveResponse.ok) {
-
-            throw new Error(
-                "Live API HTTP " +
-                liveResponse.status
-            );
-        }
-
-
-        const liveData =
-            await liveResponse.json();
-
-
-        const currentPrice =
-            Number(liveData.mid);
-
-
-        if (!currentPrice) {
-
-            throw new Error(
-                "Live cena nije dostupna."
-            );
-        }
-
-
-        // ==========================================
-        // STATUS LIVE PODATKA
-        // ==========================================
-
-        if (
-            liveData.marketState === "closed"
-        ) {
-
-            liveElement.textContent =
-                "● MARKET CLOSED";
-
-        } else if (
-            liveData.stale === true
-        ) {
-
-            liveElement.textContent =
-                "● LAST KNOWN PRICE";
-
-        } else {
-
-            liveElement.textContent =
-                "● LIVE";
-        }
-
-
-        // ==========================================
-        // PRIKAZ LIVE CENE
-        // ==========================================
-
-        priceElement.textContent =
-            "$" +
-            currentPrice.toFixed(2);
-
-
-
-        // ==========================================
-        // 2. M15 PODACI
-        // ==========================================
+        // ======================================
+        // M15
+        // ======================================
 
         const m15Response =
             await fetch(
@@ -169,10 +213,6 @@ async function getGoldData() {
         }
 
 
-        // ==========================================
-        // ZATVORENE M15 SVEĆE
-        // ==========================================
-
         const m15Closed =
             m15Bars
                 .filter(
@@ -193,15 +233,15 @@ async function getGoldData() {
         ) {
 
             throw new Error(
-                "Nema dovoljno zatvorenih M15 sveća."
+                "Nema dovoljno M15 sveća."
             );
         }
 
 
 
-        // ==========================================
-        // 3. H1 PODACI
-        // ==========================================
+        // ======================================
+        // H1
+        // ======================================
 
         const h1Response =
             await fetch(
@@ -255,20 +295,10 @@ async function getGoldData() {
             );
 
 
-        if (
-            h1Prices.length < 50
-        ) {
 
-            throw new Error(
-                "Nema dovoljno zatvorenih H1 sveća."
-            );
-        }
-
-
-
-        // ==========================================
-        // 4. M15 INDIKATORI
-        // ==========================================
+        // ======================================
+        // M15 INDIKATORI
+        // ======================================
 
         const ema20 =
             calculateEMA(
@@ -317,15 +347,18 @@ async function getGoldData() {
 
         const momentum =
             (
-                (currentPrice - oldPrice) /
+                (
+                    (currentPrice || oldPrice) -
+                    oldPrice
+                ) /
                 oldPrice
             ) * 100;
 
 
 
-        // ==========================================
-        // 5. H1 INDIKATORI
-        // ==========================================
+        // ======================================
+        // H1 INDIKATORI
+        // ======================================
 
         const h1Ema50 =
             calculateEMA(
@@ -357,9 +390,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 6. MARKET STRUCTURE
-        // ==========================================
+        // ======================================
+        // MARKET STRUCTURE
+        // ======================================
 
         const recentBars =
             m15Closed.slice(-20);
@@ -385,15 +418,21 @@ async function getGoldData() {
 
         const resistanceDistance =
             (
-                (recentHigh - currentPrice) /
-                currentPrice
+                (
+                    recentHigh -
+                    (currentPrice || recentHigh)
+                ) /
+                (currentPrice || recentHigh)
             ) * 100;
 
 
         const supportDistance =
             (
-                (currentPrice - recentLow) /
-                currentPrice
+                (
+                    (currentPrice || recentLow) -
+                    recentLow
+                ) /
+                (currentPrice || recentLow)
             ) * 100;
 
 
@@ -418,15 +457,13 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 7. M15 SCORE
-        // ==========================================
+        // ======================================
+        // M15 SCORE
+        // ======================================
 
         let m15Score =
             50;
 
-
-        // EMA20 vs EMA50
 
         if (
             ema20 > ema50
@@ -439,8 +476,6 @@ async function getGoldData() {
             m15Score -= 10;
         }
 
-
-        // EMA50 vs EMA200
 
         if (
             ema200 !== null
@@ -458,10 +493,9 @@ async function getGoldData() {
             }
 
 
-            // Cena vs EMA200
-
             if (
-                currentPrice > ema200
+                (currentPrice || ema200) >
+                ema200
             ) {
 
                 m15Score += 10;
@@ -472,8 +506,6 @@ async function getGoldData() {
             }
         }
 
-
-        // RSI
 
         if (
             rsi > 50 &&
@@ -491,8 +523,6 @@ async function getGoldData() {
         }
 
 
-        // MACD
-
         if (
             macd.histogram > 0
         ) {
@@ -504,8 +534,6 @@ async function getGoldData() {
             m15Score -= 10;
         }
 
-
-        // Momentum
 
         if (
             momentum > 0
@@ -519,8 +547,6 @@ async function getGoldData() {
         }
 
 
-        // Ograničenje
-
         m15Score =
             Math.max(
                 0,
@@ -532,9 +558,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 8. H1 TREND
-        // ==========================================
+        // ======================================
+        // H1 TREND
+        // ======================================
 
         let h1Bullish =
             false;
@@ -584,9 +610,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 9. FINAL SIGNAL
-        // ==========================================
+        // ======================================
+        // FINAL SIGNAL
+        // ======================================
 
         let finalSignal =
             "⚪ NO TRADE";
@@ -595,8 +621,6 @@ async function getGoldData() {
         let confidence =
             50;
 
-
-        // M15 + H1 BULLISH
 
         if (
             m15Score >= 70 &&
@@ -611,12 +635,8 @@ async function getGoldData() {
                     95,
                     m15Score + 10
                 );
-        }
 
-
-        // M15 + H1 BEARISH
-
-        else if (
+        } else if (
             m15Score <= 30 &&
             h1Bearish
         ) {
@@ -629,13 +649,8 @@ async function getGoldData() {
                     95,
                     100 - m15Score + 10
                 );
-        }
 
-
-        // M15 BULLISH
-        // H1 nije potvrdio
-
-        else if (
+        } else if (
             m15Score >= 70
         ) {
 
@@ -644,13 +659,8 @@ async function getGoldData() {
 
             confidence =
                 m15Score;
-        }
 
-
-        // M15 BEARISH
-        // H1 nije potvrdio
-
-        else if (
+        } else if (
             m15Score <= 30
         ) {
 
@@ -663,9 +673,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 10. RSI ZAŠTITA
-        // ==========================================
+        // ======================================
+        // RSI ZAŠTITA
+        // ======================================
 
         if (
             rsi < 30 &&
@@ -700,9 +710,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 11. TREND
-        // ==========================================
+        // ======================================
+        // TREND
+        // ======================================
 
         let trend =
             "🟡 NEUTRAL";
@@ -749,9 +759,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 12. PRIKAZ
-        // ==========================================
+        // ======================================
+        // PRIKAZ
+        // ======================================
 
         trendElement.textContent =
             trend;
@@ -781,19 +791,11 @@ async function getGoldData() {
             ema50.toFixed(2);
 
 
-        if (
+        ema200Element.textContent =
             ema200 !== null
-        ) {
-
-            ema200Element.textContent =
-                "$" +
-                ema200.toFixed(2);
-
-        } else {
-
-            ema200Element.textContent =
-                "N/A";
-        }
+                ? "$" +
+                    ema200.toFixed(2)
+                : "N/A";
 
 
         macdElement.textContent =
@@ -835,9 +837,9 @@ async function getGoldData() {
 
 
 
-        // ==========================================
-        // 13. PORUKA
-        // ==========================================
+        // ======================================
+        // PORUKA
+        // ======================================
 
         if (
             rsi >= 30 &&
@@ -878,17 +880,6 @@ async function getGoldData() {
                     "Uslovi nisu dovoljno jaki za ulazak.";
             }
         }
-
-
-
-        // ==========================================
-        // 14. VREME AŽURIRANJA
-        // ==========================================
-
-        updatedElement.textContent =
-            new Date().toLocaleTimeString(
-                "sr-Latn-RS"
-            );
 
 
     } catch (error) {
@@ -933,7 +924,8 @@ function calculateEMA(
 
         ema =
             (
-                prices[i] - ema
+                prices[i] -
+                ema
             ) *
             multiplier +
             ema;
@@ -1111,16 +1103,17 @@ function calculateMACD(
 
 
 // ==========================================
-// PRVO POKRETANJE
+// POKRENI
 // ==========================================
+
+startLiveConnection();
 
 getGoldData();
 
 
 
 // ==========================================
-// AUTOMATSKO OSVEŽAVANJE
-// SVAKIH 60 SEKUNDI
+// ANALIZA SVAKIH 60 SEKUNDI
 // ==========================================
 
 setInterval(
