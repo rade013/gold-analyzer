@@ -9,77 +9,123 @@ const momentumElement = document.getElementById("momentum");
 const messageElement = document.getElementById("message");
 const updatedElement = document.getElementById("updated");
 
+
 async function getGoldData() {
 
     try {
 
-        const response = await fetch(
+        // LIVE CENA
+        const liveResponse = await fetch(
+            "https://biquote.io/api/XAUUSD?allowStale=false"
+        );
+
+        if (!liveResponse.ok) {
+            throw new Error("Live cena HTTP " + liveResponse.status);
+        }
+
+        const liveData = await liveResponse.json();
+
+        const currentPrice = Number(liveData.mid);
+
+        if (!currentPrice) {
+            throw new Error("Live cena nije dostupna.");
+        }
+
+
+        // ISTORIJSKI PODACI ZA ANALIZU
+        const historyResponse = await fetch(
             "https://biquote.io/api/XAUUSD/ohlc?interval=1h&limit=200"
         );
 
-        if (!response.ok) {
-            throw new Error("HTTP " + response.status);
+        if (!historyResponse.ok) {
+            throw new Error(
+                "Istorijski podaci HTTP " +
+                historyResponse.status
+            );
         }
 
-        const data = await response.json();
+        const historyData =
+            await historyResponse.json();
 
-        const bars = data.bars
+
+        const bars = historyData.bars
             .filter(bar => !bar.isOpen)
             .reverse();
 
-        const prices = bars.map(bar => Number(bar.close));
+
+        const prices =
+            bars.map(bar => Number(bar.close));
+
 
         if (prices.length < 50) {
-            throw new Error("Nema dovoljno candle-a.");
+            throw new Error(
+                "Nema dovoljno podataka za analizu."
+            );
         }
 
-        const currentPrice = prices[prices.length - 1];
 
+        // PRIKAZ LIVE CENE
         priceElement.textContent =
             "$" + currentPrice.toFixed(2);
 
-        analyze(prices);
+
+        // ANALIZA
+        analyze(prices, currentPrice);
+
 
         updatedElement.textContent =
-            new Date().toLocaleTimeString("sr-Latn-RS");
+            new Date().toLocaleTimeString(
+                "sr-Latn-RS"
+            );
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "GOLD ANALYZER ERROR:",
+            error
+        );
 
         messageElement.textContent =
             "Greška: " + error.message;
     }
-    const liveResponse = await fetch(
-    "https://biquote.io/api/XAUUSD?allowStale=false"
-);
-
-const liveData = await liveResponse.json();
-
-const currentPrice = Number(liveData.mid);
 }
+
 
 
 function calculateEMA(prices, period) {
 
-    const multiplier = 2 / (period + 1);
+    const multiplier =
+        2 / (period + 1);
 
     let ema = prices[0];
 
-    for (let i = 1; i < prices.length; i++) {
+
+    for (
+        let i = 1;
+        i < prices.length;
+        i++
+    ) {
 
         ema =
-            (prices[i] - ema) * multiplier + ema;
+            (prices[i] - ema) *
+            multiplier +
+            ema;
     }
+
 
     return ema;
 }
 
 
-function calculateRSI(prices, period = 14) {
+
+function calculateRSI(
+    prices,
+    period = 14
+) {
 
     let gains = 0;
     let losses = 0;
+
 
     for (
         let i = prices.length - period;
@@ -88,14 +134,20 @@ function calculateRSI(prices, period = 14) {
     ) {
 
         const change =
-            prices[i] - prices[i - 1];
+            prices[i] -
+            prices[i - 1];
+
 
         if (change > 0) {
+
             gains += change;
+
         } else {
+
             losses -= change;
         }
     }
+
 
     const averageGain =
         gains / period;
@@ -103,77 +155,135 @@ function calculateRSI(prices, period = 14) {
     const averageLoss =
         losses / period;
 
+
     if (averageLoss === 0) {
+
         return 100;
     }
 
-    const rs =
-        averageGain / averageLoss;
 
-    return 100 - (100 / (1 + rs));
+    const rs =
+        averageGain /
+        averageLoss;
+
+
+    return 100 -
+        (100 / (1 + rs));
 }
 
 
-function analyze(prices) {
 
-    const current =
-        prices[prices.length - 1];
+function analyze(
+    prices,
+    currentPrice
+) {
 
     const ema20 =
-        calculateEMA(prices, 20);
+        calculateEMA(
+            prices,
+            20
+        );
+
 
     const ema50 =
-        calculateEMA(prices, 50);
+        calculateEMA(
+            prices,
+            50
+        );
+
 
     const rsi =
         calculateRSI(prices);
 
+
     const oldPrice =
-        prices[prices.length - 10];
+        prices[
+            prices.length - 10
+        ];
+
 
     const momentum =
-        ((current - oldPrice) / oldPrice) * 100;
+        (
+            (currentPrice - oldPrice) /
+            oldPrice
+        ) * 100;
+
 
     let score = 50;
 
 
+
+    // EMA TREND
     if (ema20 > ema50) {
+
         score += 20;
+
     } else {
+
         score -= 20;
     }
 
 
-    if (current > ema20) {
+
+    // CENA VS EMA20
+    if (currentPrice > ema20) {
+
         score += 10;
+
     } else {
+
         score -= 10;
     }
 
 
-    if (rsi > 55 && rsi < 70) {
+
+    // RSI
+    if (
+        rsi > 55 &&
+        rsi < 70
+    ) {
+
         score += 15;
     }
 
 
-    if (rsi < 45 && rsi > 30) {
+    if (
+        rsi < 45 &&
+        rsi > 30
+    ) {
+
         score -= 15;
     }
 
 
+
+    // MOMENTUM
     if (momentum > 0) {
+
         score += 10;
+
     } else {
+
         score -= 10;
     }
 
 
+
+    // OGRANIČENJE 0-100
     score =
-        Math.max(0, Math.min(100, score));
+        Math.max(
+            0,
+            Math.min(
+                100,
+                score
+            )
+        );
+
 
 
     let trend;
     let signal;
+
 
 
     if (score >= 70) {
@@ -193,39 +303,69 @@ function analyze(prices) {
     }
 
 
+
+    // PRIKAZ
     trendElement.textContent =
         trend;
+
 
     signalElement.textContent =
         signal;
 
+
     scoreElement.textContent =
         score + " / 100";
+
 
     rsiElement.textContent =
         rsi.toFixed(1);
 
+
     ema20Element.textContent =
-        "$" + ema20.toFixed(2);
+        "$" +
+        ema20.toFixed(2);
+
 
     ema50Element.textContent =
-        "$" + ema50.toFixed(2);
+        "$" +
+        ema50.toFixed(2);
+
 
     momentumElement.textContent =
-        (momentum >= 0 ? "+" : "") +
-        momentum.toFixed(3) + "%";
+        (
+            momentum >= 0
+                ? "+"
+                : ""
+        ) +
+        momentum.toFixed(3) +
+        "%";
 
 
-    messageElement.textContent =
-        signal === "🟢 BUY"
-            ? "Tržište pokazuje bullish uslove."
-            : signal === "🔴 SELL"
-                ? "Tržište pokazuje bearish uslove."
-                : "Uslovi nisu dovoljno jasni za ulazak.";
+
+    if (signal === "🟢 BUY") {
+
+        messageElement.textContent =
+            "Tržište pokazuje bullish uslove.";
+
+    } else if (
+        signal === "🔴 SELL"
+    ) {
+
+        messageElement.textContent =
+            "Tržište pokazuje bearish uslove.";
+
+    } else {
+
+        messageElement.textContent =
+            "Uslovi nisu dovoljno jasni za ulazak.";
+    }
 }
 
 
+
 getGoldData();
+
+
 
 setInterval(
     getGoldData,
