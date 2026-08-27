@@ -138,72 +138,54 @@ async function getGoldData() {
         // VREME POSLEDNJEG TICKA
         // ==========================================
 
-        let quoteTime =
-            "N/A";
+      let quoteTime = "N/A";
 
+if (liveData.timestamp) {
+    quoteTime = new Date(
+        liveData.timestamp
+    ).toLocaleTimeString(
+        "sr-Latn-RS"
+    );
+}
 
-        if (
-            liveData.timestamp
-        ) {
+const age =
+    Number(liveData.quoteAgeSeconds);
 
-            quoteTime =
-                new Date(
-                    liveData.timestamp
-                ).toLocaleTimeString(
-                    "sr-Latn-RS"
-                );
-        }
-
-
-        const age =
-            Number(
-                liveData.quoteAgeSeconds
-            );
-
-
-        if (
-            Number.isFinite(age)
-        ) {
-
-            if (
-                age < 60
-            ) {
-
-                const checkTime =
+const checkTime =
     new Date().toLocaleTimeString(
         "sr-Latn-RS"
     );
+
+let ageText = "N/A";
+
+if (Number.isFinite(age)) {
+
+    if (age < 60) {
+
+        ageText =
+            age + " sek";
+
+    } else if (age < 3600) {
+
+        ageText =
+            Math.floor(age / 60) +
+            " min";
+
+    } else {
+
+        ageText =
+            Math.floor(age / 3600) +
+            " h";
+    }
+}
 
 updatedElement.textContent =
     "Provera: " +
     checkTime +
     " • Poslednji tick: " +
-    quoteTime;
-
-            } else if (
-                age < 3600
-            ) {
-
-                updatedElement.textContent =
-                    quoteTime +
-                    " • podatak pre " +
-                    Math.floor(age / 60) +
-                    " min";
-
-            } else {
-
-                updatedElement.textContent =
-                    quoteTime +
-                    " • podatak pre " +
-                    Math.floor(age / 3600) +
-                    "h";
-            }
-
-        } else {
-
-            updatedElement.textContent =
-                quoteTime;
-        }
+    quoteTime +
+    " • Starost: " +
+    ageText;
 
 
 
